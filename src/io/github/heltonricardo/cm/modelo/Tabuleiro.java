@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import io.github.heltonricardo.cm.excecao.ExplosaoException;
-
 public class Tabuleiro {
 
 	private int linhas;
@@ -65,7 +63,8 @@ public class Tabuleiro {
 		try {
 			if (0 <= linha && linha < linhas && 0 <= coluna && coluna < colunas)
 				campos.get(linha * colunas + coluna).abrir();
-		} catch (ExplosaoException e) {
+		} catch (Exception e) {
+			// FIXME Ajustar a implementação do método abrir
 			campos.forEach(c -> c.setAberto(true));
 			throw e;
 		}
@@ -75,31 +74,4 @@ public class Tabuleiro {
 		if (0 <= linha && linha < linhas && 0 <= coluna && coluna < colunas)
 			campos.get(linha * colunas + coluna).alternarMarcacao();
 	}
-	
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		
-		sb.append("     ");
-		for (int i = 0; i < colunas; ++i)
-			sb.append(" " + i + " ");
-		sb.append("\n     ");
-		for (int i = 0; i < colunas; ++i)
-			sb.append(" v ");
-		sb.append("\n\n");
-		
-		for (int i = 0; i < linhas; ++i) {
-			sb.append(" " + i + " > ");
-			for (int j = 0; j < colunas; ++j) {
-				sb.append(" ");
-				sb.append(campos.get(i * colunas + j));
-				sb.append(" ");
-			}
-			sb.append("\n");
-		}
-				
-		return sb.toString();
-	}
-	
-	
 }

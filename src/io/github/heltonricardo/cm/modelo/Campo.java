@@ -3,8 +3,6 @@ package io.github.heltonricardo.cm.modelo;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.heltonricardo.cm.excecao.ExplosaoException;
-
 public class Campo {
 
 	private final int linha;
@@ -84,7 +82,7 @@ public class Campo {
 		aberto = true;
 		
 		if (minado)
-			throw new ExplosaoException();
+			// TODO implementar nova versão
 		
 		if (vizinhancaSegura())
 			vizinhos.forEach(v -> v.abrir());
@@ -98,19 +96,5 @@ public class Campo {
 	
 	long minasNaVizinhanca() {
 		return vizinhos.stream().filter(v -> v.minado).count();
-	}
-	
-	@Override
-	public String toString() {
-		if (marcado)
-			return "X";
-		else if (aberto && minado)
-			return "*";
-		else if (aberto && minasNaVizinhanca() > 0)
-			return Long.toString(minasNaVizinhanca());
-		else if (aberto)
-			return " ";
-		else
-			return "?";
 	}
 }
