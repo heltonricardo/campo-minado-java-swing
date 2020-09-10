@@ -3,8 +3,6 @@ package io.github.heltonricardo.cm.modelo;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.jdi.AbsentInformationException;
-
 public class Campo {
 
 	private final int linha;
