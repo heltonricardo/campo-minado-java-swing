@@ -3,6 +3,8 @@ package io.github.heltonricardo.cm.modelo;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.jdi.AbsentInformationException;
+
 public class Campo {
 
 	private final int linha;
@@ -13,6 +15,7 @@ public class Campo {
 	private boolean marcado;
 	
 	private List<Campo> vizinhos = new ArrayList<Campo>();
+	private List<CampoObservador> observadores = new ArrayList<>();
 	
 	Campo(int linha, int coluna) {
 		this.linha = linha;
@@ -41,6 +44,9 @@ public class Campo {
 	
 	void setAberto(boolean aberto) {
 		this.aberto = aberto;
+		
+		if (aberto)
+			notificarObservadores(CampoEvento.ABRIR);
 	}
 	
 	void reiniciar() {
@@ -51,6 +57,14 @@ public class Campo {
 	
 	void minar() {
 		minado = true;
+	}
+	
+	public void adicionarObservador(CampoObservador obs) {
+		observadores.add(obs);
+	}
+	
+	private void notificarObservadores(CampoEvento evento) {
+		observadores.stream().forEach(o -> o.ocorreuEvento(this, evento));
 	}
 	
 	boolean adicionarVizinho(Campo vizinho) {
@@ -64,8 +78,14 @@ public class Campo {
 	}
 	
 	void alternarMarcacao() {
-		if (!aberto)
+		if (!aberto) {
 			marcado = !marcado;
+			
+			if (marcado)
+				notificarObservadores(CampoEvento.MARCAR);
+			else
+				notificarObservadores(CampoEvento.DESMARCAR);
+		}
 	}
 	
 	boolean objetivoAlcancado() {
@@ -79,10 +99,12 @@ public class Campo {
 		if (aberto || marcado)
 			return false;
 		
-		aberto = true;
+		if (minado) {
+			notificarObservadores(CampoEvento.EXPLODIR);
+			return true;
+		}
 		
-		if (minado)
-			// TODO implementar nova versão
+		setAberto(true);
 		
 		if (vizinhancaSegura())
 			vizinhos.forEach(v -> v.abrir());
