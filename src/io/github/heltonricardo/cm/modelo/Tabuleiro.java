@@ -3,14 +3,16 @@ package io.github.heltonricardo.cm.modelo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
-public class Tabuleiro {
+public class Tabuleiro implements CampoObservador {
 
 	private int linhas;
 	private int colunas;
 	private int minas;
 	
 	private final List<Campo> campos = new ArrayList<Campo>();
+	private final List<Consumer<ResultadoEvento>> observadores = new ArrayList<>();
 
 	public Tabuleiro(int linhas, int colunas, int minas) {
 		this.linhas = linhas;
@@ -21,12 +23,22 @@ public class Tabuleiro {
 		associarVizinhos();
 		sortearMinas();
 	}
+	
+	public void adicionarObservador(Consumer<ResultadoEvento> obs) {
+		observadores.add(obs);
+	}
+	
+	private void notificarObservadores(boolean resultado) {
+		observadores.stream().forEach(o -> o.accept(new ResultadoEvento(resultado)));
+	}
 
 	private void gerarCampos() {
 		for (int i = 0; i < linhas; ++i)
-			for (int j = 0; j < colunas; ++j)
-				campos.add(new Campo(i, j));
-		
+			for (int j = 0; j < colunas; ++j) {
+				Campo campo = new Campo(i, j);
+				campo.adicionarObservador(this);
+				campos.add(campo);
+			}
 	}
 
 	private void associarVizinhos() {
@@ -60,18 +72,28 @@ public class Tabuleiro {
 	}
 	
 	public void abrir(int linha, int coluna) {
-		try {
-			if (0 <= linha && linha < linhas && 0 <= coluna && coluna < colunas)
-				campos.get(linha * colunas + coluna).abrir();
-		} catch (Exception e) {
-			// FIXME Ajustar a implementação do método abrir
-			campos.forEach(c -> c.setAberto(true));
-			throw e;
-		}
+		if (0 <= linha && linha < linhas && 0 <= coluna && coluna < colunas)
+			campos.get(linha * colunas + coluna).abrir();
+	}
+	
+	public void mostrarMinas() {
+		campos.stream()
+		.filter(c -> c.isMinado())
+		.forEach(c -> c.setAberto(true));
 	}
 	
 	public void AlterarMarcacao(int linha, int coluna) {
 		if (0 <= linha && linha < linhas && 0 <= coluna && coluna < colunas)
 			campos.get(linha * colunas + coluna).alternarMarcacao();
+	}
+
+	@Override
+	public void ocorreuEvento(Campo campo, CampoEvento evento) {
+		if (evento == CampoEvento.EXPLODIR) {
+			mostrarMinas();
+			notificarObservadores(false);
+		} else if (objetivoAlcancado()) {
+			notificarObservadores(true);
+		}
 	}
 }
