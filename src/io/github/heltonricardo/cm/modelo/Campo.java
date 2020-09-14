@@ -51,6 +51,7 @@ public class Campo {
 		aberto = false;
 		minado = false;
 		marcado = false;
+		notificarObservadores(CampoEvento.REINICIAR);
 	}
 	
 	void minar() {
